@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>卡牌战斗游戏 --俊毅制作</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            user-select: none;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: rgba(13, 27, 42, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(76, 201, 240, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(76, 201, 240, 0.5);
+        }
+        
+        h1 {
+            color: #4cc9f0;
+            text-shadow: 0 0 10px rgba(76, 201, 240, 0.7);
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.2rem;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .enemy-area, .player-area {
+            background: rgba(22, 33, 62, 0.7);
+            border-radius: 10px;
+            padding: 15px;
+            border: 2px solid;
+            position: relative;
+        }
+        
+        .enemy-area {
+            border-color: #f72585;
+        }
+        
+        .player-area {
+            border-color: #4cc9f0;
+        }
+        
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .hp-bar {
+            width: 200px;
+            height: 20px;
+            background: #000000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .hp-fill {
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+        
+        .enemy-hp {
+            background: linear-gradient(90deg, #f72585, #b5179e);
+        }
+        
+        .player-hp {
+            background: linear-gradient(90deg, #4cc9f0, #4895ef);
+        }
+        
+        .stats {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .stat {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .cards-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .card {
+            width: 120px;
+            height: 160px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .card-attack {
+            background: linear-gradient(135deg, #f72585, #b5179e);
+        }
+        
+        .card-defend {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+        }
+        
+        .card-heal {
+            background: linear-gradient(135deg, #2ec4b6, #23a6a5);
+        }
+        
+        .card-cost {
+            background: rgba(0, 0, 0, 0.3);
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #ffcc00;
+            align-self: flex-end;
+        }
+        
+        .card-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card-value {
+            font-size: 1.8rem;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card-desc {
+            font-size: 0.8rem;
+            text-align: center;
+        }
+        
+        .turn-info {
+            text-align: center;
+            padding: 15px;
+            margin: 20px 0;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            font-size: 1.2rem;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            background: linear-gradient(to right, #4cc9f0, #4361ee);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(76, 201, 240, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(76, 201, 240, 0.5);
+        }
+        
+        button:disabled {
+            background: linear-gradient(to right, #6c757d, #495057);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .energy-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            color: #ffcc00;
+            margin-top: 10px;
+            justify-content: center;
+        }
+        
+        .energy-orb {
+            width: 25px;
+            height: 25px;
+            background: radial-gradient(circle, #ffcc00, #ffaa00);
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffcc00;
+        }
+        
+        .message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .message.show {
+            opacity: 1;
+        }
+        
+        .floating-text {
+            position: absolute;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 10;
+            opacity: 0;
+            transition: all 1s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .cards-container {
+                gap: 10px;
+            }
+            
+            .card {
+                width: 100px;
+                height: 140px;
+                font-size: 0.9rem;
+            }
+            
+            .card-value {
+                font-size: 1.5rem;
+            }
+        }
+        
+        .background-decoration {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .decoration-item {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(76, 201, 240, 0.1);
+            animation: pulse 5s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.5); opacity: 0.1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>卡牌战斗游戏</h1>
+            <p class="subtitle">选择卡牌与敌人战斗！使用攻击、防御和治疗策略来赢得胜利</p>
+        </div>
+        
+        <div class="game-area">
+            <div class="enemy-area">
+                <div class="status-bar">
+                    <h2>敌人</h2>
+                    <div class="stats">
+                        <div class="stat">🛡️ 护甲: <span id="enemy-def">1000</span></div>
+                        <div class="stat">❤️ 生命值: <span id="enemy-hp">500</span>/500</div>
+                    </div>
+                </div>
+                <div class="hp-bar">
+                    <div class="hp-fill enemy-hp" style="width: 100%;"></div>
+                </div>
+                <div class="intent">下一回合意图: <span id="enemy-intent">攻击</span></div>
+            </div>
+            
+            <div class="turn-info">
+                <div id="turn-text">你的回合</div>
+                <div class="energy-display">
+                    <div class="energy-orb"></div>
+                    <span>能量: <span id="energy">5</span>/5</span>
+                </div>
+            </div>
+            
+            <div class="player-area">
+                <div class="status-bar">
+                    <h2>玩家</h2>
+                    <div class="stats">
+                        <div class="stat">🛡️ 护甲: <span id="player-def">50</span></div>
+                        <div class="stat">❤️ 生命值: <span id="player-hp">100</span>/100</div>
+                    </div>
+                </div>
+                <div class="hp-bar">
+                    <div class="hp-fill player-hp" style="width: 100%;"></div>
+                </div>
+                
+                <div class="cards-container">
+                    <div class="card card-attack" data-type="attack" data-cost="1" data-value="15">
+                        <div class="card-cost">1</div>
+                        <div class="card-name">攻击</div>
+                        <div class="card-value">15</div>
+                        <div class="card-desc">造成15点伤害</div>
+                    </div>
+                    
+                    <div class="card card-defend" data-type="defend" data-cost="1" data-value="10">
+                        <div class="card-cost">1</div>
+                        <div class="card-name">防御</div>
+                        <div class="card-value">10</div>
+                        <div class="card-desc">获得10点护甲</div>
+                    </div>
+                    
+                    <div class="card card-heal" data-type="heal" data-cost="1" data-value="10">
+                        <div class="card-cost">1</div>
+                        <div class="card-name">治疗</div>
+                        <div class="card-value">10</div>
+                        <div class="card-desc">恢复10点生命</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="end-turn-btn">结束回合</button>
+            <button id="restart-btn">重新开始</button>
+        </div>
+    </div>
+    
+    <div id="message" class="message"></div>
+    
+    <div class="background-decoration" id="decoration"></div>
+
+    <script>
+        // 游戏状态
+        const gameState = {
+            player: {
+                hp: 100,
+                maxHp: 100,
+                def: 50
+            },
+            enemy: {
+                hp: 500,
+                maxHp: 500,
+                def: 1000,
+                nextAction: 'attack'
+            },
+            energy: 5,
+            maxEnergy: 5,
+            isPlayerTurn: true,
+            gameOver: false
+        };
+
+        // DOM元素
+        const playerHpElement = document.getElementById('player-hp');
+        const playerDefElement = document.getElementById('player-def');
+        const enemyHpElement = document.getElementById('enemy-hp');
+        const enemyDefElement = document.getElementById('enemy-def');
+        const enemyIntentElement = document.getElementById('enemy-intent');
+        const energyElement = document.getElementById('energy');
+        const turnTextElement = document.getElementById('turn-text');
+        const endTurnBtn = document.getElementById('end-turn-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const messageElement = document.getElementById('message');
+        const playerHpBar = document.querySelector('.player-hp');
+        const enemyHpBar = document.querySelector('.enemy-hp');
+        const cards = document.querySelectorAll('.card');
+        const decorationContainer = document.getElementById('decoration');
+
+        // 初始化游戏
+        function initGame() {
+            // 重置游戏状态
+            gameState.player = { hp: 100, maxHp: 100, def: 50 };
+            gameState.enemy = { hp: 500, maxHp: 500, def: 1000, nextAction: 'attack' };
+            gameState.energy = 5;
+            gameState.isPlayerTurn = true;
+            gameState.gameOver = false;
+            
+            // 更新UI
+            updateUI();
+            
+            // 设置回合文本
+            turnTextElement.textContent = '你的回合';
+            
+            // 生成敌人下一回合意图
+            generateEnemyIntent();
+            
+            // 创建背景装饰
+            createDecorations();
+        }
+
+        // 创建背景装饰
+        function createDecorations() {
+            decorationContainer.innerHTML = '';
+            for (let i = 0; i < 15; i++) {
+                const size = Math.random() * 30 + 10;
+                const item = document.createElement('div');
+                item.className = 'decoration-item';
+                item.style.width = `${size}px`;
+                item.style.height = `${size}px`;
+                item.style.top = `${Math.random() * 100}%`;
+                item.style.left = `${Math.random() * 100}%`;
+                item.style.animationDelay = `${Math.random() * 5}s`;
+                decorationContainer.appendChild(item);
+            }
+        }
+
+        // 更新UI
+        function updateUI() {
+            // 更新玩家状态
+            playerHpElement.textContent = gameState.player.hp;
+            playerDefElement.textContent = gameState.player.def;
+            playerHpBar.style.width = `${(gameState.player.hp / gameState.player.maxHp) * 100}%`;
+            
+            // 更新敌人状态
+            enemyHpElement.textContent = gameState.enemy.hp;
+            enemyDefElement.textContent = gameState.enemy.def;
+            enemyHpBar.style.width = `${(gameState.enemy.hp / gameState.enemy.maxHp) * 100}%`;
+            
+            // 更新能量显示
+            energyElement.textContent = gameState.energy;
+            
+            // 更新卡牌状态
+            updateCardsState();
+        }
+
+        // 更新卡牌状态
+        function updateCardsState() {
+            cards.forEach(card => {
+                const cost = parseInt(card.dataset.cost);
+                
+                if (cost > gameState.energy || !gameState.isPlayerTurn || gameState.gameOver) {
+                    card.style.opacity = '0.5';
+                    card.style.cursor = 'not-allowed';
+                } else {
+                    card.style.opacity = '1';
+                    card.style.cursor = 'pointer';
+                }
+            });
+        }
+
+        // 生成敌人意图
+        function generateEnemyIntent() {
+            const actions = ['attack', 'defend', 'heal'];
+            const action = actions[Math.floor(Math.random() * actions.length)];
+            
+            gameState.enemy.nextAction = action;
+            
+            let intentText = '';
+            switch(action) {
+                case 'attack':
+                    intentText = '攻击';
+                    break;
+                case 'defend':
+                    intentText = '防御';
+                    break;
+                case 'heal':
+                    intentText = '终极治疗';
+                    break;
+            }
+            
+            enemyIntentElement.textContent = intentText;
+        }
+
+        // 计算伤害并处理护甲
+        function calculateDamage(baseDamage, targetDef, targetHp) {
+            let actualDamage = baseDamage;
+            let remainingDef = targetDef;
+            
+            // 护甲先吸收伤害
+            if (remainingDef > 0) {
+                const defAbsorbed = Math.min(remainingDef, actualDamage);
+                remainingDef -= defAbsorbed;
+                actualDamage -= defAbsorbed;
+            }
+            
+            // 剩余伤害扣除生命值
+            const hpDamage = Math.max(0, actualDamage);
+            const newHp = Math.max(0, targetHp - hpDamage);
+            
+            return {
+                newDef: remainingDef,
+                newHp: newHp,
+                damageDealt: hpDamage,
+                defAbsorbed: baseDamage - hpDamage
+            };
+        }
+
+        // 使用卡牌
+        function useCard(type, cost, value) {
+            if (gameState.gameOver || !gameState.isPlayerTurn || cost > gameState.energy) return;
+            
+            // 消耗能量
+            gameState.energy -= cost;
+            
+            // 应用卡牌效果
+            switch(type) {
+                case 'attack':
+                    const damageResult = calculateDamage(value, gameState.enemy.def, gameState.enemy.hp);
+                    gameState.enemy.def = damageResult.newDef;
+                    gameState.enemy.hp = damageResult.newHp;
+                    
+                    let attackMessage = `你对敌人造成了 ${damageResult.damageDealt} 点伤害！`;
+                    if (damageResult.defAbsorbed > 0) {
+                        attackMessage += ` (${damageResult.defAbsorbed}点被护甲吸收)`;
+                    }
+                    
+                    showMessage(attackMessage, '#f72585');
+                    createFloatingText(`-${damageResult.damageDealt}`, '#f72585');
+                    break;
+                    
+                case 'defend':
+                    gameState.player.def += value;
+                    showMessage(`你获得了 ${value} 点护甲！`, '#4cc9f0');
+                    createFloatingText(`+${value}护甲`, '#4cc9f0');
+                    break;
+                    
+                case 'heal':
+                    const healAmount = Math.min(gameState.player.maxHp - gameState.player.hp, value);
+                    gameState.player.hp += healAmount;
+                    showMessage(`你恢复了 ${healAmount} 点生命值！`, '#2ec4b6');
+                    createFloatingText(`+${healAmount}生命`, '#2ec4b6');
+                    break;
+            }
+            
+            // 更新UI
+            updateUI();
+            
+            // 检查游戏是否结束
+            if (checkGameOver()) return;
+            
+            // 如果没有能量，自动结束回合
+            if (gameState.energy <= 0) {
+                setTimeout(endTurn, 800);
+            }
+        }
+
+        // 结束回合
+        function endTurn() {
+            if (gameState.gameOver) return;
+            
+            gameState.isPlayerTurn = false;
+            turnTextElement.textContent = '敌人回合...';
+            updateCardsState();
+            
+            // 敌人行动
+            setTimeout(() => {
+                performEnemyAction();
+                
+                // 更新UI
+                updateUI();
+                
+                // 检查游戏是否结束
+                if (checkGameOver()) return;
+                
+                // 开始玩家回合
+                setTimeout(startPlayerTurn, 1500);
+            }, 1000);
+        }
+
+        // 执行敌人行动
+        function performEnemyAction() {
+            switch(gameState.enemy.nextAction) {
+                case 'attack':
+                    const damageResult = calculateDamage(70, gameState.player.def, gameState.player.hp);
+                    gameState.player.def = damageResult.newDef;
+                    gameState.player.hp = damageResult.newHp;
+                    
+                    let attackMessage = `敌人对你造成了 ${damageResult.damageDealt} 点伤害！`;
+                    if (damageResult.defAbsorbed > 0) {
+                        attackMessage += ` (${damageResult.defAbsorbed}点被护甲吸收)`;
+                    }
+                    
+                    showMessage(attackMessage, '#f72585');
+                    createFloatingText(`-${damageResult.damageDealt}`, '#f72585', true);
+                    break;
+                    
+                case 'defend':
+                    gameState.enemy.def += 30;
+                    showMessage(`敌人获得了 30 点护甲！`, '#4cc9f0');
+                    break;
+                    
+                case 'heal':
+                    const healAmount = Math.min(gameState.enemy.maxHp - gameState.enemy.hp, 50);
+                    gameState.enemy.hp += healAmount;
+                    showMessage(`敌人恢复了 ${healAmount} 点生命值！`, '#2ec4b6');
+                    break;
+            }
+        }
+
+        // 开始玩家回合
+        function startPlayerTurn() {
+            gameState.isPlayerTurn = true;
+            gameState.energy = gameState.maxEnergy;
+            turnTextElement.textContent = '你的回合';
+            
+            // 生成敌人下一回合意图
+            generateEnemyIntent();
+            
+            // 更新UI
+            updateUI();
+        }
+
+        // 检查游戏是否结束
+        function checkGameOver() {
+            if (gameState.player.hp <= 0) {
+                showMessage('游戏结束！你输了！', '#f72585');
+                gameState.gameOver = true;
+                return true;
+            }
+            
+            if (gameState.enemy.hp <= 0) {
+                showMessage('恭喜！你赢了！', '#2ec4b6');
+                gameState.gameOver = true;
+                return true;
+            }
+            
+            return false;
+        }
+
+        // 显示消息
+        function showMessage(text, color) {
+            messageElement.textContent = text;
+            messageElement.style.background = `linear-gradient(90deg, ${color}, #4361ee)`;
+            messageElement.classList.add('show');
+            
+            setTimeout(() => {
+                messageElement.classList.remove('show');
+            }, 2000);
+        }
+
+        // 创建浮动文字
+        function createFloatingText(text, color, isEnemy = false) {
+            const floatingText = document.createElement('div');
+            floatingText.className = 'floating-text';
+            floatingText.textContent = text;
+            floatingText.style.color = color;
+            floatingText.style.left = isEnemy ? '70%' : '30%';
+            floatingText.style.top = isEnemy ? '30%' : '70%';
+            
+            document.body.appendChild(floatingText);
+            
+            // 触发动画
+            setTimeout(() => {
+                floatingText.style.opacity = '1';
+                floatingText.style.transform = 'translateY(-50px)';
+            }, 10);
+            
+            // 移除元素
+            setTimeout(() => {
+                floatingText.remove();
+            }, 1000);
+        }
+
+        // 事件监听
+        cards.forEach(card => {
+            card.addEventListener('click', () => {
+                const type = card.dataset.type;
+                const cost = parseInt(card.dataset.cost);
+                const value = parseInt(card.dataset.value);
+                
+                useCard(type, cost, value);
+            });
+        });
+
+        endTurnBtn.addEventListener('click', endTurn);
+        restartBtn.addEventListener('click', initGame);
+
+        // 初始化游戏
+        initGame();
+    </script>
+</body>
+</html
